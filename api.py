@@ -14,7 +14,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import io
@@ -368,15 +368,21 @@ def export_csv(
 
 
 @app.post("/ask")
-def ask_question(question: str = Query(..., description="Your question about the data")):
+def ask_question(
+    question: str = Query(..., description="Your question about the data"),
+    x_api_key: str = Header(None, alias="X-OpenAI-Key", description="User's own OpenAI API key"),
+):
     """Answer a question about the data using OpenAI or rule-based analysis."""
     df = load_merged()
 
+    # User's key takes priority over server key
+    active_key = x_api_key or OPENAI_API_KEY
+
     # Try OpenAI
-    if OPENAI_API_KEY:
+    if active_key:
         try:
             from openai import OpenAI
-            client = OpenAI(api_key=OPENAI_API_KEY)
+            client = OpenAI(api_key=active_key)
 
             # Build context
             context_lines = [f"Dataset: {len(df)} FDA warning letters"]
@@ -399,7 +405,7 @@ def ask_question(question: str = Query(..., description="Your question about the
 
     # Fallback: basic stats
     return {
-        "answer": f"Based on {len(df)} letters in the dataset. Add OPENAI_API_KEY for AI-powered answers.",
+        "answer": f"Based on {len(df)} letters in the dataset. Enter your OpenAI API key in the sidebar for AI-powered answers.",
         "method": "rule_based",
     }
 

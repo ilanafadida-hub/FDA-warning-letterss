@@ -4,6 +4,7 @@ Central configuration for the FDA Warning Letter Analysis System.
 
 import json
 import os
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
@@ -62,16 +63,23 @@ def ensure_data_dir():
 
 
 def load_status():
-    """Load the last_updated.json status file."""
+    """Load the last_updated.json status file with validation."""
     if STATUS_FILE.exists():
-        with open(STATUS_FILE, "r") as f:
-            return json.load(f)
+        try:
+            with open(STATUS_FILE, "r") as f:
+                data = json.load(f)
+            if not isinstance(data, dict):
+                return {}
+            return data
+        except (json.JSONDecodeError, OSError):
+            return {}
     return {}
 
 
 def save_status(key, **extra):
     """
     Update a key in the status file with current timestamp.
+    Uses atomic write to prevent corruption on interrupted writes.
 
     Example: save_status("metadata_fetch", records=3370, new=15)
     """
@@ -82,5 +90,13 @@ def save_status(key, **extra):
         "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
         **extra,
     }
-    with open(STATUS_FILE, "w") as f:
-        json.dump(status, f, indent=2)
+    # Atomic write: write to temp file, then rename
+    try:
+        fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix=".tmp")
+        with os.fdopen(fd, "w") as f:
+            json.dump(status, f, indent=2)
+        os.replace(tmp_path, STATUS_FILE)
+    except OSError:
+        # Fallback to direct write if atomic fails
+        with open(STATUS_FILE, "w") as f:
+            json.dump(status, f, indent=2)

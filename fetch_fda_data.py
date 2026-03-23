@@ -30,34 +30,59 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+METADATA_DTYPES = {
+    "url": str, "posted_date": str, "letter_date": str,
+    "company": str, "issuing_office": str, "subject": str,
+}
+
+TEXTS_DTYPES = {
+    "url": str, "full_text": str, "reference_number": str,
+    "product_type": str, "facility_address": str, "fei_number": str, "fetch_date": str,
+}
+
+
 def load_existing_metadata():
     """Load existing metadata CSV, or return empty DataFrame."""
     if METADATA_CSV.exists():
-        df = pd.read_csv(METADATA_CSV)
+        df = pd.read_csv(METADATA_CSV, dtype=METADATA_DTYPES)
         logger.info(f"Loaded {len(df)} existing metadata records")
         return df
-    return pd.DataFrame(columns=["url", "posted_date", "letter_date", "company", "issuing_office", "subject"])
+    return pd.DataFrame(columns=list(METADATA_DTYPES.keys()))
 
 
 def load_existing_texts():
     """Load existing texts CSV, or return empty DataFrame."""
     if TEXTS_CSV.exists():
-        df = pd.read_csv(TEXTS_CSV)
+        df = pd.read_csv(TEXTS_CSV, dtype=TEXTS_DTYPES)
         logger.info(f"Loaded {len(df)} existing letter texts")
         return df
-    return pd.DataFrame(columns=["url", "full_text", "reference_number", "product_type",
-                                  "facility_address", "fei_number", "fetch_date"])
+    return pd.DataFrame(columns=list(TEXTS_DTYPES.keys()))
+
+
+def _sanitize_csv_value(val):
+    """Escape values that could be interpreted as formulas in spreadsheet software."""
+    if isinstance(val, str) and val and val[0] in ("=", "+", "-", "@"):
+        return "'" + val
+    return val
+
+
+def _sanitize_df_for_csv(df):
+    """Apply CSV injection protection to all string columns."""
+    result = df.copy()
+    for col in result.select_dtypes(include=["object"]).columns:
+        result[col] = result[col].map(_sanitize_csv_value)
+    return result
 
 
 def save_metadata(df):
     """Save metadata DataFrame to CSV."""
-    df.to_csv(METADATA_CSV, index=False)
+    _sanitize_df_for_csv(df).to_csv(METADATA_CSV, index=False)
     logger.info(f"Saved {len(df)} records to {METADATA_CSV}")
 
 
 def save_texts(df):
     """Save texts DataFrame to CSV."""
-    df.to_csv(TEXTS_CSV, index=False)
+    _sanitize_df_for_csv(df).to_csv(TEXTS_CSV, index=False)
     logger.info(f"Saved {len(df)} records to {TEXTS_CSV}")
 
 

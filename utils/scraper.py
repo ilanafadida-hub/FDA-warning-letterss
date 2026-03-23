@@ -112,7 +112,12 @@ def _parse_row(row):
         link = soup2.find("a")
         if link:
             company = link.get_text(strip=True)
-            url = link.get("href", "")
+            raw_url = link.get("href", "")
+            # Only accept FDA-relative or FDA-absolute URLs
+            if raw_url.startswith("/") or raw_url.startswith("https://www.fda.gov"):
+                url = raw_url
+            else:
+                url = ""
         else:
             company = BeautifulSoup(str(row[2]), "html.parser").get_text(strip=True)
             url = ""

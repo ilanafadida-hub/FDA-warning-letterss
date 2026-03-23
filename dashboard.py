@@ -8,10 +8,12 @@ Run with: streamlit run dashboard.py
 """
 
 import json
+import os
 import subprocess
 import sys
 from collections import Counter
 from datetime import datetime
+from pathlib import Path
 
 import altair as alt
 import pandas as pd
@@ -132,11 +134,11 @@ def apply_filters(df, search_text, years, offices, product_types):
         for pt in product_types:
             pt_lower = pt.lower()
             if "subject" in filtered.columns:
-                mask |= filtered["subject"].fillna("").str.lower().str.contains(pt_lower, na=False)
+                mask |= filtered["subject"].fillna("").str.lower().str.contains(pt_lower, na=False, regex=False)
             if "product_type" in filtered.columns:
-                mask |= filtered["product_type"].fillna("").str.lower().str.contains(pt_lower, na=False)
+                mask |= filtered["product_type"].fillna("").str.lower().str.contains(pt_lower, na=False, regex=False)
             if "product_types" in filtered.columns:
-                mask |= filtered["product_types"].fillna("").str.lower().str.contains(pt_lower, na=False)
+                mask |= filtered["product_types"].fillna("").str.lower().str.contains(pt_lower, na=False, regex=False)
         filtered = filtered[mask]
 
     # Text search (across multiple columns)
@@ -146,7 +148,7 @@ def apply_filters(df, search_text, years, offices, product_types):
         mask = pd.Series(False, index=filtered.index)
         for col in text_cols:
             if col in filtered.columns:
-                mask |= filtered[col].fillna("").str.lower().str.contains(search_lower, na=False)
+                mask |= filtered[col].fillna("").str.lower().str.contains(search_lower, na=False, regex=False)
         filtered = filtered[mask]
 
     return filtered
@@ -188,7 +190,14 @@ def render_sidebar(df):
     # Refresh button
     st.sidebar.markdown("---")
     if st.sidebar.button("Update Data (fetch new only)", use_container_width=True):
-        refresh_data()
+        # Rate limit: prevent rapid repeated clicks
+        last_refresh = st.session_state.get("_last_refresh_time")
+        now = datetime.now()
+        if last_refresh and (now - last_refresh).total_seconds() < 60:
+            st.sidebar.warning("Please wait at least 60 seconds between refreshes.")
+        else:
+            st.session_state["_last_refresh_time"] = now
+            refresh_data()
 
     # Data info & last updated status
     st.sidebar.markdown("---")
@@ -229,18 +238,19 @@ def refresh_data():
     """Run fetch and summarize scripts, then clear cache."""
     with st.spinner("Fetching new data from FDA... This may take several minutes."):
         try:
-            subprocess.run([sys.executable, "fetch_fda_data.py"], check=True, capture_output=True)
+            script_dir = str(Path(__file__).parent)
+            subprocess.run([sys.executable, os.path.join(script_dir, "fetch_fda_data.py")], check=True, capture_output=True)
             st.success("Data fetched successfully!")
         except subprocess.CalledProcessError as e:
-            st.error(f"Fetch failed: {e.stderr.decode() if e.stderr else str(e)}")
+            st.error("Data fetch failed. Check the console log for details.")
             return
 
     with st.spinner("Summarizing new letters..."):
         try:
-            subprocess.run([sys.executable, "summarize_letters.py"], check=True, capture_output=True)
+            subprocess.run([sys.executable, os.path.join(script_dir, "summarize_letters.py")], check=True, capture_output=True)
             st.success("Summarization complete!")
         except subprocess.CalledProcessError as e:
-            st.error(f"Summarization failed: {e.stderr.decode() if e.stderr else str(e)}")
+            st.error("Summarization failed. Check the console log for details.")
 
     st.cache_data.clear()
     st.rerun()
@@ -333,7 +343,7 @@ def render_letters_table(filtered_df):
                     viols = json.loads(row["violations"])
                     if viols:
                         st.markdown("**CFR Violations:**")
-                        st.markdown(cfr_list_to_markdown(viols), unsafe_allow_html=True)
+                        st.markdown(cfr_list_to_markdown(viols), unsafe_allow_html=False)
                 except (json.JSONDecodeError, TypeError):
                     pass
 
@@ -438,7 +448,7 @@ def render_trends(filtered_df):
 
             # Clickable links for top violations
             st.markdown("**Click to view regulation:**")
-            st.markdown(cfr_list_to_markdown([v for v, _ in viol_counts[:10]]), unsafe_allow_html=True)
+            st.markdown(cfr_list_to_markdown([v for v, _ in viol_counts[:10]]), unsafe_allow_html=False)
 
     # ── Top Observation Keywords ──
     if "key_observations" in filtered_df.columns:
@@ -639,7 +649,7 @@ def render_observations_and_responses(df):
 
                 if p["violations"]:
                     st.markdown("**Cited Regulations:**")
-                    st.markdown(cfr_list_to_markdown(p["violations"][:5]), unsafe_allow_html=True)
+                    st.markdown(cfr_list_to_markdown(p["violations"][:5]), unsafe_allow_html=False)
 
             with col_resp:
                 st.markdown("**Required Corrective Actions:**")
@@ -800,7 +810,7 @@ def render_acceptable_responses():
             st.markdown(f"- {obs}")
 
         st.markdown("**Key Regulations:**")
-        st.markdown(cfr_list_to_markdown(info["key_regulations"]), unsafe_allow_html=True)
+        st.markdown(cfr_list_to_markdown(info["key_regulations"]), unsafe_allow_html=False)
 
     with col2:
         st.markdown("**Recommended Response Strategy:**")
@@ -899,8 +909,8 @@ def answer_question(question, full_df, filtered_df):
     if OPENAI_API_KEY:
         try:
             return _answer_with_openai(question, filtered_df)
-        except Exception as e:
-            st.warning(f"Claude API error: {e}. Using statistical analysis instead.")
+        except Exception:
+            st.warning("AI-powered Q&A unavailable. Using statistical analysis instead.")
 
     # Rule-based answers
     if any(w in q for w in ["multiple", "repeat", "more than one", "several times"]):
@@ -1077,7 +1087,7 @@ def render_letter_detail(df):
                 viols = json.loads(row["violations"])
                 if viols:
                     st.markdown("### CFR Violations")
-                    st.markdown(cfr_list_to_markdown(viols), unsafe_allow_html=True)
+                    st.markdown(cfr_list_to_markdown(viols), unsafe_allow_html=False)
             except (json.JSONDecodeError, TypeError):
                 pass
 

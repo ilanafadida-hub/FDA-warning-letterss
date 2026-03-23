@@ -28,6 +28,12 @@ def fetch_letter_page(session, url):
         raw HTML string, or None on failure
     """
     full_url = url if url.startswith("http") else f"{BASE_URL}{url}"
+    # Validate URL points to FDA domain
+    from urllib.parse import urlparse
+    parsed = urlparse(full_url)
+    if parsed.hostname and not parsed.hostname.endswith(".fda.gov"):
+        logger.warning(f"Rejected non-FDA URL: {full_url}")
+        return None
 
     for attempt in range(MAX_RETRIES):
         try:
@@ -162,11 +168,11 @@ def extract_letter_text(html):
             break
 
     return {
-        "full_text": full_text,
-        "reference_number": reference_number,
-        "product_type": product_type,
-        "facility_address": facility_address,
-        "fei_number": fei_number,
+        "full_text": full_text[:500000],
+        "reference_number": reference_number[:50],
+        "product_type": product_type[:100],
+        "facility_address": facility_address[:300],
+        "fei_number": fei_number[:20],
     }
 
 

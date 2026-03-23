@@ -32,30 +32,48 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+TEXTS_DTYPES = {
+    "url": str, "full_text": str, "reference_number": str,
+    "product_type": str, "facility_address": str, "fei_number": str, "fetch_date": str,
+}
+
+SUMMARIES_DTYPES = {
+    "url": str, "summary": str, "key_observations": str, "violations": str,
+    "product_types": str, "corrective_actions": str, "method": str, "summarize_date": str,
+}
+
+
 def load_texts():
     """Load letter texts CSV."""
     if not TEXTS_CSV.exists():
         print(f"No letter texts found at {TEXTS_CSV}")
         print("Run fetch_fda_data.py first to download letters.")
         sys.exit(1)
-    return pd.read_csv(TEXTS_CSV)
+    return pd.read_csv(TEXTS_CSV, dtype=TEXTS_DTYPES)
 
 
 def load_existing_summaries():
     """Load existing summaries CSV, or return empty DataFrame."""
     if SUMMARIES_CSV.exists():
-        df = pd.read_csv(SUMMARIES_CSV)
+        df = pd.read_csv(SUMMARIES_CSV, dtype=SUMMARIES_DTYPES)
         logger.info(f"Loaded {len(df)} existing summaries")
         return df
-    return pd.DataFrame(columns=[
-        "url", "summary", "key_observations", "violations",
-        "product_types", "corrective_actions", "method", "summarize_date",
-    ])
+    return pd.DataFrame(columns=list(SUMMARIES_DTYPES.keys()))
+
+
+def _sanitize_csv_value(val):
+    """Escape values that could be interpreted as formulas in spreadsheet software."""
+    if isinstance(val, str) and val and val[0] in ("=", "+", "-", "@"):
+        return "'" + val
+    return val
 
 
 def save_summaries(df):
     """Save summaries DataFrame to CSV."""
-    df.to_csv(SUMMARIES_CSV, index=False)
+    sanitized = df.copy()
+    for col in sanitized.select_dtypes(include=["object"]).columns:
+        sanitized[col] = sanitized[col].map(_sanitize_csv_value)
+    sanitized.to_csv(SUMMARIES_CSV, index=False)
     logger.info(f"Saved {len(df)} summaries to {SUMMARIES_CSV}")
 
 

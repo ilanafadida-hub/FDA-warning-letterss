@@ -64,14 +64,24 @@ def summarize_with_openai(text, api_key=None):
 
         result = json.loads(response_text)
 
-        # Validate expected keys
-        expected_keys = {"summary", "key_observations", "violations", "product_types", "corrective_actions"}
-        for k in expected_keys:
-            if k not in result:
-                result[k] = [] if k != "summary" else "Summary not available."
+        # Validate response is a dict
+        if not isinstance(result, dict):
+            logger.error("OpenAI response is not a JSON object")
+            return None
 
-        result["method"] = "openai"
-        return result
+        # Validate and sanitize expected keys
+        validated = {}
+        validated["summary"] = str(result.get("summary", "Summary not available."))[:2000]
+
+        for list_key in ("key_observations", "violations", "product_types", "corrective_actions"):
+            raw = result.get(list_key, [])
+            if isinstance(raw, list):
+                validated[list_key] = [str(item)[:500] for item in raw if isinstance(item, (str, int, float))][:50]
+            else:
+                validated[list_key] = []
+
+        validated["method"] = "openai"
+        return validated
 
     except ImportError:
         logger.warning("openai package not installed. Install with: pip install openai")

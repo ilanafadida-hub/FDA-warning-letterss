@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY config.py .
+COPY dashboard.py .
+COPY utils/ ./utils/
+
+# Create data directory
+RUN mkdir -p data
+
+# Expose port
+EXPOSE ${PORT:-8501}
+
+# Run Streamlit
+CMD ["sh", "-c", "streamlit run dashboard.py --server.port ${PORT:-8501} --server.address 0.0.0.0 --server.headless true"]

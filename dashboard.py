@@ -429,64 +429,65 @@ def render_trends(filtered_df):
         st.info("No data to visualize. Try broadening your filters.")
         return
 
-    # ── Letters over time ──
-    if "year" in filtered_df.columns:
-        col1, col2 = st.columns(2)
+    # ── Top Observation Keywords (finding-relevant only) ──
+    if "key_observations" in filtered_df.columns:
+        st.markdown("#### Most Common Observation Keywords")
+        all_words = []
+        # Expanded stop words: standard English + FDA boilerplate / non-finding words
+        stop_words = {
+            # common English
+            "the", "a", "an", "and", "or", "to", "of", "in", "for", "on", "is",
+            "was", "were", "are", "be", "been", "being", "have", "has", "had",
+            "do", "does", "did", "not", "no", "your", "you", "that", "this",
+            "with", "from", "by", "at", "it", "its", "as", "but", "if", "we",
+            "our", "their", "they", "there", "which", "what", "when", "where",
+            "how", "all", "each", "than", "also", "any", "firm", "did", "can",
+            "will", "shall", "should", "could", "would", "may", "might", "must",
+            "about", "into", "over", "after", "before", "between", "under",
+            "above", "below", "such", "other", "more", "less", "some", "most",
+            "very", "just", "only", "then", "them", "these", "those", "been",
+            "same", "both", "either", "neither", "well", "back", "even", "still",
+            # FDA boilerplate / non-finding functional words
+            "without", "required", "including", "include", "includes", "included",
+            "established", "establish", "establishing", "however", "therefore",
+            "furthermore", "additionally", "specifically", "noted", "observed",
+            "example", "examples", "regarding", "following", "according",
+            "ensure", "ensuring", "ensured", "whether", "within", "during",
+            "upon", "through", "among", "since", "until", "unless", "although",
+            "provide", "provided", "provides", "providing",
+            "determine", "determined", "determines", "determining",
+            "identify", "identified", "identifies", "identifying",
+            "adequate", "adequately", "appropriate", "appropriately",
+            "necessary", "requirement", "requirements", "required",
+            "procedure", "procedures", "written", "document", "documents",
+            "documented", "documentation", "letter", "warning", "response",
+            "company", "companies", "firm's", "inspection", "inspector",
+            "investigators", "investigator", "conducted", "conduct",
+            "include", "included", "includes", "also", "failed", "failure",
+            "comply", "complied", "compliance", "complying",
+            "described", "describe", "describes", "description",
+            "noted", "note", "notes", "review", "reviewed", "reviewing",
+            "found", "find", "finding", "findings", "listed", "list",
+            "specific", "specifically", "related", "concerning",
+        }
+        for obs_json in filtered_df["key_observations"].dropna():
+            try:
+                obs_list = json.loads(obs_json)
+                for obs in obs_list:
+                    words = obs.lower().split()
+                    all_words.extend(w for w in words if len(w) > 3 and w not in stop_words)
+            except (json.JSONDecodeError, TypeError):
+                pass
 
-        with col1:
-            st.markdown("#### Letters by Year")
-            yearly = filtered_df.groupby("year").size().reset_index(name="count")
-            yearly = yearly.dropna()
-            chart = alt.Chart(yearly).mark_bar(color="#1f77b4").encode(
-                x=alt.X("year:O", title="Year"),
-                y=alt.Y("count:Q", title="Number of Letters"),
-                tooltip=["year:O", "count:Q"],
-            ).properties(height=350)
+        if all_words:
+            word_counts = Counter(all_words).most_common(20)
+            word_df = pd.DataFrame(word_counts, columns=["keyword", "count"])
+            chart = alt.Chart(word_df).mark_bar(color="#9467bd").encode(
+                x=alt.X("count:Q", title="Frequency"),
+                y=alt.Y("keyword:N", title="", sort="-x"),
+                tooltip=["keyword:N", "count:Q"],
+            ).properties(height=500)
             st.altair_chart(chart, use_container_width=True)
-
-        with col2:
-            st.markdown("#### Letters by Quarter")
-            if "quarter" in filtered_df.columns:
-                quarterly = filtered_df.groupby("quarter").size().reset_index(name="count")
-                quarterly = quarterly.sort_values("quarter").tail(20)  # Last 20 quarters
-                chart = alt.Chart(quarterly).mark_line(point=True, color="#ff7f0e").encode(
-                    x=alt.X("quarter:O", title="Quarter"),
-                    y=alt.Y("count:Q", title="Number of Letters"),
-                    tooltip=["quarter:O", "count:Q"],
-                ).properties(height=350)
-                st.altair_chart(chart, use_container_width=True)
-
-    # ── Issuing Office breakdown ──
-    if "issuing_office" in filtered_df.columns:
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.markdown("#### By Issuing Office")
-            office_counts = filtered_df["issuing_office"].value_counts().head(10).reset_index()
-            office_counts.columns = ["office", "count"]
-            chart = alt.Chart(office_counts).mark_bar(color="#2ca02c").encode(
-                x=alt.X("count:Q", title="Number of Letters"),
-                y=alt.Y("office:N", title="", sort="-x"),
-                tooltip=["office:N", "count:Q"],
-            ).properties(height=350)
-            st.altair_chart(chart, use_container_width=True)
-
-        with col2:
-            # Heatmap: Office × Year
-            if "year" in filtered_df.columns:
-                st.markdown("#### Office × Year Heatmap")
-                heatmap_data = filtered_df.groupby(["issuing_office", "year"]).size().reset_index(name="count")
-                # Top 6 offices for readability
-                top_offices = filtered_df["issuing_office"].value_counts().head(6).index.tolist()
-                heatmap_data = heatmap_data[heatmap_data["issuing_office"].isin(top_offices)]
-
-                chart = alt.Chart(heatmap_data).mark_rect().encode(
-                    x=alt.X("year:O", title="Year"),
-                    y=alt.Y("issuing_office:N", title=""),
-                    color=alt.Color("count:Q", scale=alt.Scale(scheme="blues"), title="Letters"),
-                    tooltip=["issuing_office:N", "year:O", "count:Q"],
-                ).properties(height=300)
-                st.altair_chart(chart, use_container_width=True)
 
     # ── Top Violations ──
     if "violations" in filtered_df.columns:
@@ -513,33 +514,17 @@ def render_trends(filtered_df):
             st.markdown("**Click to view regulation:**")
             st.markdown(cfr_list_to_markdown([v for v, _ in viol_counts[:10]]), unsafe_allow_html=False)
 
-    # ── Top Observation Keywords ──
-    if "key_observations" in filtered_df.columns:
-        st.markdown("#### Most Common Observation Keywords")
-        all_words = []
-        stop_words = {"the", "a", "an", "and", "or", "to", "of", "in", "for", "on", "is",
-                       "was", "were", "are", "be", "been", "being", "have", "has", "had",
-                       "do", "does", "did", "not", "no", "your", "you", "that", "this",
-                       "with", "from", "by", "at", "it", "its", "as", "but", "if", "we",
-                       "our", "their", "they", "there", "which", "what", "when", "where",
-                       "how", "all", "each", "than", "also", "any", "firm", "did"}
-        for obs_json in filtered_df["key_observations"].dropna():
-            try:
-                obs_list = json.loads(obs_json)
-                for obs in obs_list:
-                    words = obs.lower().split()
-                    all_words.extend(w for w in words if len(w) > 3 and w not in stop_words)
-            except (json.JSONDecodeError, TypeError):
-                pass
-
-        if all_words:
-            word_counts = Counter(all_words).most_common(20)
-            word_df = pd.DataFrame(word_counts, columns=["keyword", "count"])
-            chart = alt.Chart(word_df).mark_bar(color="#9467bd").encode(
-                x=alt.X("count:Q", title="Frequency"),
-                y=alt.Y("keyword:N", title="", sort="-x"),
-                tooltip=["keyword:N", "count:Q"],
-            ).properties(height=500)
+    # ── Common Responses by Subject ──
+    if "subject" in filtered_df.columns:
+        st.markdown("#### Common Responses by Subject")
+        subject_counts = filtered_df["subject"].dropna().value_counts().head(15).reset_index()
+        subject_counts.columns = ["subject", "count"]
+        if len(subject_counts) > 0:
+            chart = alt.Chart(subject_counts).mark_bar(color="#17becf").encode(
+                x=alt.X("count:Q", title="Number of Letters"),
+                y=alt.Y("subject:N", title="", sort="-x"),
+                tooltip=["subject:N", "count:Q"],
+            ).properties(height=400)
             st.altair_chart(chart, use_container_width=True)
 
 

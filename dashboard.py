@@ -41,11 +41,15 @@ def cfr_to_link(citation):
     # Extract part and section numbers
     m = re.match(r'21\s*C\.?F\.?R\.?\s*(?:Part\s*)?(\d+)(?:\.(\d+))?(.*)$', citation.strip())
     if not m:
-        return citation  # Can't parse, return plain text
+        # Sanitize: escape markdown special chars in unparseable citations
+        safe = citation.replace("[", "\\[").replace("]", "\\]").replace("(", "\\(").replace(")", "\\)")
+        return safe
 
     part = m.group(1)
     section = m.group(2)
-    remainder = m.group(3).strip() if m.group(3) else ""
+    # Sanitize remainder: only allow parenthesized subsections like (a)(1)
+    raw_remainder = m.group(3).strip() if m.group(3) else ""
+    remainder = re.match(r'^(\([a-zA-Z0-9]+\))*', raw_remainder).group(0) if raw_remainder else ""
 
     if section:
         url = f"https://www.ecfr.gov/current/title-21/part-{part}/section-{part}.{section}"
@@ -73,8 +77,12 @@ def load_data():
     ensure_data_dir()
 
     # Load metadata
+    import os
+    print(f"[DEBUG] Looking for data at: {METADATA_CSV} (exists: {METADATA_CSV.exists()})")
+    print(f"[DEBUG] DATA_DIR contents: {os.listdir(DATA_DIR) if DATA_DIR.exists() else 'DIR NOT FOUND'}")
     if METADATA_CSV.exists():
         meta = pd.read_csv(METADATA_CSV)
+        print(f"[DEBUG] Loaded {len(meta)} metadata records")
     else:
         return pd.DataFrame()
 

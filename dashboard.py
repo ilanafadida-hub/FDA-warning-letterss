@@ -77,12 +77,8 @@ def load_data():
     ensure_data_dir()
 
     # Load metadata
-    import os
-    print(f"[DEBUG] Looking for data at: {METADATA_CSV} (exists: {METADATA_CSV.exists()})")
-    print(f"[DEBUG] DATA_DIR contents: {os.listdir(DATA_DIR) if DATA_DIR.exists() else 'DIR NOT FOUND'}")
     if METADATA_CSV.exists():
         meta = pd.read_csv(METADATA_CSV)
-        print(f"[DEBUG] Loaded {len(meta)} metadata records")
     else:
         return pd.DataFrame()
 

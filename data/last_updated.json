@@ -1,0 +1,23 @@
+{
+  "summarization": {
+    "timestamp": "2026-03-23T22:34:59.408166",
+    "date": "2026-03-23 22:34",
+    "total_summaries": 3370,
+    "new_summaries": 3366,
+    "errors": 0,
+    "method": "Claude API (with rule-based fallback)"
+  },
+  "metadata_fetch": {
+    "timestamp": "2026-03-23T23:08:52.049895",
+    "date": "2026-03-23 23:08",
+    "total_records": 3374,
+    "new_records": 5
+  },
+  "text_fetch": {
+    "timestamp": "2026-03-23T23:09:02.158789",
+    "date": "2026-03-23 23:09",
+    "fetched": 4,
+    "failed": 0,
+    "total_with_text": 3375
+  }
+}

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FDA Warning Letter Analysis — User Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .slide {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 8px;
+  }
+
+  .header .subtitle {
+    font-size: 1.1rem;
+    color: #94a3b8;
+  }
+
+  .section {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .section h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #60a5fa;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section h2 .icon {
+    font-size: 1.5rem;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+  }
+
+  .step {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+  }
+
+  .step-number {
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: #3b82f6;
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+
+  .step p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+
+  .tabs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .tab-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .tab-card h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 6px;
+  }
+
+  .tab-card p {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    line-height: 1.5;
+  }
+
+  .highlight {
+    background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(147,51,234,0.15));
+    border-color: rgba(59,130,246,0.3);
+  }
+
+  .key-box {
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+    color: #86efac;
+  }
+
+  .key-box strong { color: #4ade80; }
+
+  .note {
+    text-align: center;
+    color: #64748b;
+    font-size: 0.85rem;
+    margin-top: 32px;
+  }
+
+  code {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+
+  @media print {
+    body { background: white; color: #1e293b; padding: 20px; }
+    .section { border-color: #e2e8f0; }
+    .step { border-color: #e2e8f0; }
+    .tab-card { border-color: #e2e8f0; }
+    .section h2 { color: #2563eb; }
+    .step h3, .tab-card h3 { color: #1e293b; }
+    .step p, .tab-card p, .header .subtitle { color: #475569; }
+    .key-box { background: #f0fdf4; border-color: #86efac; color: #166534; }
+    .key-box strong { color: #15803d; }
+  }
+</style>
+</head>
+<body>
+
+<div class="slide">
+
+  <div class="header">
+    <h1>🔬 FDA Warning Letter Analysis System</h1>
+    <p class="subtitle">Search, filter, visualize, and analyze FDA warning letters — all in one dashboard</p>
+  </div>
+
+  <!-- GETTING STARTED -->
+  <div class="section highlight">
+    <h2><span class="icon">🚀</span> Getting Started</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Open the Dashboard</h3>
+        <p>Click the shared link to open the dashboard in your browser. No installation needed.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Add API Key (Optional)</h3>
+        <p>In the <strong>sidebar</strong>, paste your OpenAI API key to unlock AI-powered Q&A. Without a key, everything still works using rule-based analysis.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Explore & Analyze</h3>
+        <p>Use the tabs to search letters, view trends, get insights, and read full letter details.</p>
+      </div>
+    </div>
+    <div class="key-box">
+      <strong>🔑 Getting an OpenAI key:</strong> Go to <code>platform.openai.com/api-keys</code> → Create new secret key → Copy it → Paste in the sidebar. Your key stays in your browser session only and is never stored.
+    </div>
+  </div>
+
+  <!-- DASHBOARD TABS -->
+  <div class="section">
+    <h2><span class="icon">📊</span> Dashboard Tabs</h2>
+    <div class="tabs-grid">
+      <div class="tab-card">
+        <h3>📋 Letters Table</h3>
+        <p>Search and filter all warning letters. Expand rows to see full details. Export filtered results to CSV.</p>
+      </div>
+      <div class="tab-card">
+        <h3>📈 Trends & Charts</h3>
+        <p>Letters over time, office breakdown, top CFR violations, and observation keyword clouds.</p>
+      </div>
+      <div class="tab-card">
+        <h3>💡 Insights & Q&A</h3>
+        <p>Auto-generated insights, key metrics, and natural language Q&A — ask anything about the data.</p>
+      </div>
+      <div class="tab-card">
+        <h3>📄 Letter Detail</h3>
+        <p>Full view of individual letters with metadata, AI summary, observations, and complete text.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT YOU CAN DO -->
+  <div class="section">
+    <h2><span class="icon">✨</span> What You Can Do</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">🔍</div>
+        <h3>Search & Filter</h3>
+        <p>Filter by year, issuing office, subject, or company. Full-text search across all letters.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">💬</div>
+        <h3>Ask Questions</h3>
+        <p>Type natural language questions like <em>"What are the most common violations in 2024?"</em> or <em>"Which companies received multiple letters?"</em></p>
+      </div>
+      <div class="step">
+        <div class="step-number">📥</div>
+        <h3>Export Data</h3>
+        <p>Download filtered results as CSV for further analysis in Excel or Power BI.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">🔗</div>
+        <h3>CFR Links</h3>
+        <p>All CFR citations (e.g., 21 CFR 211.67) are clickable links to the official eCFR website.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section">
+    <h2><span class="icon">❓</span> FAQ</h2>
+    <div class="tabs-grid">
+      <div class="tab-card">
+        <h3>Do I need an API key?</h3>
+        <p>No. The dashboard is fully functional without one. The API key only adds AI-powered Q&A answers.</p>
+      </div>
+      <div class="tab-card">
+        <h3>Is my API key safe?</h3>
+        <p>Yes. It stays in your browser session only and is never saved to disk or sent to our servers.</p>
+      </div>
+      <div class="tab-card">
+        <h3>How much does it cost?</h3>
+        <p>Each AI Q&A question costs roughly $0.001–$0.01 using GPT-4o-mini. Very affordable for normal use.</p>
+      </div>
+      <div class="tab-card">
+        <h3>How often is data updated?</h3>
+        <p>Use the Refresh button in the sidebar to fetch new letters from FDA. Data is updated incrementally.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Built for QA professionals · Data sourced from FDA.gov · Questions? Contact the project owner</p>
+
+</div>
+
+</body>
+</html>

@@ -29,6 +29,20 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ── User API Key Input ────────────────────────────────────────────────────
+with st.sidebar:
+    user_api_key = st.text_input(
+        "🔑 OpenAI API Key (optional)",
+        type="password",
+        help="Enter your own OpenAI API key to enable AI-powered Q&A and summaries. "
+             "Without a key, the system uses rule-based analysis (still works well).",
+        placeholder="sk-..."
+    )
+    if user_api_key:
+        st.success("API key set for this session")
+    else:
+        st.info("No API key → rule-based analysis")
+
 
 # ── CFR Link Helper ────────────────────────────────────────────────────────
 
@@ -276,14 +290,61 @@ def render_letters_table(filtered_df):
         display_cols.append("summary")
 
     display_df = filtered_df[
-        [c for c in display_cols if c in filtered_df.columns]
+        [c for c in display_cols + ["url"] if c in filtered_df.columns]
     ].copy()
 
     # Format date
     if "letter_date" in display_df.columns:
         display_df["letter_date"] = display_df["letter_date"].dt.strftime("%Y-%m-%d")
 
-    # Rename for display
+    # Build HTML table with clickable company links
+    has_url = "url" in display_df.columns
+    header_cols = ["Date", "Company", "Issuing Office", "Subject"]
+    if "summary" in display_df.columns:
+        header_cols.append("Summary")
+
+    table_html = """<style>
+    .letters-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .letters-table th { background-color: #f0f2f6; padding: 10px 12px; text-align: left; border-bottom: 2px solid #ddd; position: sticky; top: 0; }
+    .letters-table td { padding: 8px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+    .letters-table tr:hover { background-color: #f8f9fb; }
+    .letters-table a { color: #1a73e8; text-decoration: none; font-weight: 500; }
+    .letters-table a:hover { text-decoration: underline; }
+    .letters-table .summary-cell { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>"""
+    table_html += '<div style="max-height: 500px; overflow-y: auto;"><table class="letters-table"><thead><tr>'
+    for col in header_cols:
+        table_html += f"<th>{col}</th>"
+    table_html += "</tr></thead><tbody>"
+
+    for _, row in display_df.iterrows():
+        table_html += "<tr>"
+        # Date
+        table_html += f'<td style="white-space: nowrap;">{row.get("letter_date", "N/A")}</td>'
+        # Company — clickable link to FDA letter
+        company = str(row.get("company", "Unknown")).replace("<", "&lt;").replace(">", "&gt;")
+        if has_url and pd.notna(row.get("url")):
+            url = str(row["url"]).replace('"', "&quot;")
+            table_html += f'<td><a href="{url}" target="_blank">{company}</a></td>'
+        else:
+            table_html += f"<td>{company}</td>"
+        # Issuing Office
+        office = str(row.get("issuing_office", "N/A")).replace("<", "&lt;").replace(">", "&gt;")
+        table_html += f"<td>{office}</td>"
+        # Subject
+        subject = str(row.get("subject", "N/A")).replace("<", "&lt;").replace(">", "&gt;")
+        table_html += f"<td>{subject}</td>"
+        # Summary
+        if "summary" in display_df.columns:
+            summary = str(row.get("summary", "")).replace("<", "&lt;").replace(">", "&gt;") if pd.notna(row.get("summary")) else ""
+            table_html += f'<td class="summary-cell" title="{summary}">{summary[:120]}{"..." if len(summary) > 120 else ""}</td>'
+        table_html += "</tr>"
+
+    table_html += "</tbody></table></div>"
+    st.markdown(table_html, unsafe_allow_html=True)
+
+    # Drop url from export
+    export_df = display_df.drop(columns=["url"], errors="ignore")
     col_names = {
         "letter_date": "Date",
         "company": "Company",
@@ -291,12 +352,10 @@ def render_letters_table(filtered_df):
         "subject": "Subject",
         "summary": "Summary",
     }
-    display_df = display_df.rename(columns=col_names)
-
-    st.dataframe(display_df, use_container_width=True, height=500)
+    export_df = export_df.rename(columns=col_names)
 
     # Export button
-    csv_data = display_df.to_csv(index=False).encode("utf-8")
+    csv_data = export_df.to_csv(index=False).encode("utf-8")
     st.download_button(
         "📥 Export filtered results to CSV",
         csv_data,
@@ -498,6 +557,8 @@ def render_insights(df, filtered_df):
     st.markdown("#### 💬 Ask a Question About the Data")
     st.caption("Ask questions like: 'Which companies received multiple warning letters?', "
                "'What are the most common violations in 2024?', 'Show trends in cleaning observations'")
+    if not (user_api_key or OPENAI_API_KEY):
+        st.caption("💡 Enter your OpenAI API key in the sidebar to enable AI-powered answers")
 
     user_question = st.text_input("Your question:", placeholder="e.g., What are the top violations in food safety?")
 
@@ -909,10 +970,11 @@ def answer_question(question, full_df, filtered_df):
     """
     q = question.lower()
 
-    # Try Claude API first
-    if OPENAI_API_KEY:
+    # Try OpenAI API first (user's key takes priority over server key)
+    active_key = user_api_key or OPENAI_API_KEY
+    if active_key:
         try:
-            return _answer_with_openai(question, filtered_df)
+            return _answer_with_openai(question, filtered_df, api_key=active_key)
         except Exception:
             st.warning("AI-powered Q&A unavailable. Using statistical analysis instead.")
 
@@ -976,11 +1038,11 @@ def answer_question(question, full_df, filtered_df):
         result += f"- Top office: {filtered_df['issuing_office'].mode().iloc[0] if len(filtered_df) > 0 else 'N/A'}\n"
     if "year" in filtered_df.columns:
         result += f"- Year range: {int(filtered_df['year'].min())} - {int(filtered_df['year'].max())}\n"
-    result += f"\nFor more detailed answers, add your Anthropic API key to .env file."
+    result += f"\nFor more detailed answers, enter your OpenAI API key in the sidebar."
     return result
 
 
-def _answer_with_openai(question, df):
+def _answer_with_openai(question, df, api_key=None):
     """Use OpenAI API to answer questions about the data."""
     from openai import OpenAI
 
@@ -1018,7 +1080,7 @@ def _answer_with_openai(question, df):
 
     data_context = "\n".join(summary_lines)
 
-    client = OpenAI(api_key=OPENAI_API_KEY)
+    client = OpenAI(api_key=api_key or OPENAI_API_KEY)
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         max_tokens=1000,

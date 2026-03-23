@@ -6,16 +6,31 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy ALL application code (frontend needs fetch/summarize scripts too)
 COPY config.py .
 COPY dashboard.py .
+COPY fetch_fda_data.py .
+COPY summarize_letters.py .
 COPY utils/ ./utils/
 
 # Create data directory
 RUN mkdir -p data
 
+# Create startup script that fetches data then launches dashboard
+RUN echo '#!/bin/sh\n\
+echo "[STARTUP] Checking for data..."\n\
+if [ ! -f data/warning_letters.csv ]; then\n\
+  echo "[STARTUP] No data found. Fetching first 100 letters..."\n\
+  python fetch_fda_data.py --limit 100 2>&1\n\
+  echo "[STARTUP] Summarizing..."\n\
+  python summarize_letters.py 2>&1\n\
+  echo "[STARTUP] Data ready!"\n\
+fi\n\
+echo "[STARTUP] Launching dashboard..."\n\
+streamlit run dashboard.py --server.port ${PORT:-8501} --server.address 0.0.0.0 --server.headless true\n\
+' > /app/start.sh && chmod +x /app/start.sh
+
 # Expose port
 EXPOSE ${PORT:-8501}
 
-# Run Streamlit
-CMD ["sh", "-c", "streamlit run dashboard.py --server.port ${PORT:-8501} --server.address 0.0.0.0 --server.headless true"]
+CMD ["sh", "/app/start.sh"]

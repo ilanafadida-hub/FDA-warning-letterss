@@ -30,6 +30,39 @@ app = FastAPI(
     version="1.0.0",
 )
 
+
+# ── Auto-fetch data on startup if empty ───────────────────────────────────
+
+@app.on_event("startup")
+async def startup_fetch():
+    """Fetch FDA data on first startup if no data exists."""
+    import threading
+    ensure_data_dir()
+    if not METADATA_CSV.exists() or METADATA_CSV.stat().st_size < 100:
+        print("[STARTUP] No data found. Fetching FDA warning letters in background...")
+
+        def _fetch_in_background():
+            try:
+                subprocess.run(
+                    [sys.executable, "fetch_fda_data.py", "--limit", "100"],
+                    timeout=600, capture_output=True,
+                )
+                print("[STARTUP] Metadata + texts fetched. Running summarizer...")
+                subprocess.run(
+                    [sys.executable, "summarize_letters.py"],
+                    timeout=300, capture_output=True,
+                )
+                print("[STARTUP] Data ready!")
+            except Exception as e:
+                print(f"[STARTUP] Auto-fetch error: {e}")
+
+        thread = threading.Thread(target=_fetch_in_background, daemon=True)
+        thread.start()
+    else:
+        meta = pd.read_csv(METADATA_CSV)
+        print(f"[STARTUP] Data loaded: {len(meta)} letters")
+
+
 # Allow CORS for frontend
 app.add_middleware(
     CORSMiddleware,

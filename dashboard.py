@@ -546,12 +546,32 @@ def render_trends(filtered_df):
         subject_counts = filtered_df["subject"].dropna().value_counts().head(15).reset_index()
         subject_counts.columns = ["subject", "count"]
         if len(subject_counts) > 0:
-            chart = alt.Chart(subject_counts).mark_bar(color="#17becf").encode(
-                x=alt.X("count:Q", title="Number of Letters"),
-                y=alt.Y("subject:N", title="", sort="-x"),
-                tooltip=["subject:N", "count:Q"],
-            ).properties(height=400)
-            st.altair_chart(chart, use_container_width=True)
+            import plotly.express as px
+            fig = px.pie(
+                subject_counts,
+                values="count",
+                names="subject",
+                hole=0.35,
+                color_discrete_sequence=px.colors.qualitative.Set3,
+            )
+            fig.update_traces(
+                textposition="inside",
+                textinfo="percent",
+                hovertemplate="<b>%{label}</b><br>Letters: %{value}<br>Share: %{percent}<extra></extra>",
+            )
+            fig.update_layout(
+                legend=dict(
+                    orientation="v",
+                    yanchor="middle",
+                    y=0.5,
+                    xanchor="left",
+                    x=1.02,
+                    font=dict(size=12),
+                ),
+                height=500,
+                margin=dict(l=20, r=20, t=30, b=20),
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
 
 # ── Tab 3: Insights & Q&A ────────────────────────────────────────────────

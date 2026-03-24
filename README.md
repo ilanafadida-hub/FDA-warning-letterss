@@ -71,18 +71,18 @@ Or simply double-click `run.bat`.
 
 ### Letters Table
 - Searchable, filterable table of all warning letters
+- Company names are clickable links to the original FDA warning letter
 - Expandable rows showing full details, observations, and letter text
 - Export filtered results to CSV
 
 ### Trends & Visualizations
-- Letters over time (by year and quarter)
-- Issuing office breakdown and heatmap
-- Top CFR violations cited
-- Most common observation keywords
+- Most common observation keywords (filtered to show only actual findings like contamination, safety, cleaning — not generic terms)
+- Top CFR violations cited with clickable links to eCFR
+- Common responses by subject
 
 ### Insights & Q&A
 - Auto-generated insights (year-over-year trends, top themes, repeat offenders)
-- Natural language Q&A — ask questions about the data
+- Natural language Q&A — ask questions about the data (supports bring-your-own OpenAI API key via sidebar)
 - Year-over-year comparison tool
 - Key metric cards
 

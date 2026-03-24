@@ -434,9 +434,9 @@ def render_trends(filtered_df):
         st.markdown("#### Most Common Observation Keywords")
         all_words = []
         import re as _re
-        # Expanded stop words: standard English + FDA boilerplate / legal / non-finding words
+        # Comprehensive stop words: only allow specific FDA finding/problem words through
         stop_words = {
-            # common English
+            # ── Common English ──
             "the", "a", "an", "and", "or", "to", "of", "in", "for", "on", "is",
             "was", "were", "are", "be", "been", "being", "have", "has", "had",
             "do", "does", "did", "not", "no", "your", "you", "that", "this",
@@ -451,7 +451,13 @@ def render_trends(filtered_df):
             "make", "made", "take", "taken", "give", "given", "keep", "kept",
             "need", "show", "shown", "part", "case", "cases", "like", "used",
             "using", "use", "uses", "based", "because", "further", "whether",
-            # FDA boilerplate / non-finding functional words
+            # ── Generic manufacturing/GMP terms (appear in every letter) ──
+            "quality", "control", "controls", "batch", "batches", "process",
+            "processes", "processing", "production", "manufacture", "manufactured",
+            "manufacturing", "equipment", "specifications", "specification",
+            "components", "component", "testing", "test", "tested", "tests",
+            "identity", "strength", "purity", "records", "record", "recording",
+            # ── FDA boilerplate / regulatory framework ──
             "without", "required", "including", "include", "includes", "included",
             "established", "establish", "establishing", "however", "therefore",
             "furthermore", "additionally", "specifically", "noted", "observed",
@@ -465,22 +471,62 @@ def render_trends(filtered_df):
             "necessary", "requirement", "requirements",
             "procedure", "procedures", "written", "document", "documents",
             "documented", "documentation", "letter", "warning", "response",
-            "company", "companies", "firm's", "inspection", "inspector",
+            "company", "companies", "firms", "inspection", "inspector",
             "investigators", "investigator", "conducted", "conduct",
-            "failed", "failure", "comply", "complied", "compliance", "complying",
+            "failed", "failure", "failures", "comply", "complied", "compliance",
             "described", "describe", "describes", "description",
             "noted", "note", "notes", "review", "reviewed", "reviewing",
             "found", "find", "finding", "findings", "listed", "list",
             "specific", "specifically", "related", "concerning",
-            # Legal / enforcement boilerplate
+            "information", "conditions", "condition", "designed", "design",
+            "assure", "assured", "assuring", "notice", "notices",
+            "system", "systems", "program", "programs", "protocol", "protocols",
+            "standard", "standards", "parameter", "parameters", "criteria",
+            "limits", "limit", "acceptable", "acceptance", "release", "released",
+            "approved", "approval", "authorize", "authorized",
+            # ── Legal / enforcement boilerplate ──
             "address", "action", "result", "results", "section", "matter",
             "legal", "injunction", "seizure", "limitation", "violations",
             "violation", "regulatory", "federal", "agency", "act",
             "follow", "meet", "maintain", "maintained", "report", "reported",
             "corrective", "prevent", "issue", "issues", "issued",
-            # FDA-specific generic terms
-            "fd&c", "cfr", "cgmp", "product", "products", "drug", "drugs",
+            "prohibited", "prohibition",
+            # ── Generic action verbs ──
+            "perform", "performed", "performing", "implement", "implemented",
+            "implementing", "monitor", "monitored", "monitoring",
+            "validate", "validated", "validating", "validation",
+            "calibrate", "calibrated", "calibration",
+            "evaluate", "evaluated", "evaluating", "evaluation",
+            "verify", "verified", "verifying", "verification",
+            "train", "trained", "training", "qualified", "qualify",
+            # ── Generic facility / operations terms ──
+            "facility", "facilities", "area", "areas", "room", "rooms",
+            "material", "materials", "sample", "samples", "sampling",
+            "unit", "units", "lot", "lots", "number", "numbers",
+            "data", "date", "dates", "time", "times", "period", "periods",
+            "method", "methods", "step", "steps", "level", "levels",
+            "type", "types", "form", "forms", "label", "labels", "labeling",
+            "container", "containers", "storage", "store", "stored",
+            "personnel", "employee", "employees", "operator", "operators",
+            "management", "supervisor",
+            # ── Generic descriptors ──
+            "current", "previous", "prior", "initial", "final", "general",
+            "overall", "total", "potential", "possible", "actual", "original",
+            "additional", "multiple", "various", "several", "many", "certain",
+            "proper", "improper", "correct", "incorrect", "complete", "incomplete",
+            "effective", "ineffective", "sufficient", "insufficient",
+            "significant", "critical", "major", "minor", "routine",
+            "physical", "chemical", "visual",
+            # ── Generic finding language ──
+            "observe", "observation", "observations", "lack", "lacking", "lacks",
+            "inadequate", "inadequacy", "absence", "absent",
+            "deviation", "deviations", "discrepancy", "discrepancies",
+            "error", "errors", "deficiency", "deficiencies",
+            "problem", "problems", "concern", "concerns",
+            # ── FDA-specific generic terms ──
+            "fdc", "cfr", "cgmp", "product", "products", "drug", "drugs",
             "food", "foods", "device", "devices", "dietary", "supplement",
+            "gmp", "regulations", "regulation", "subpart",
         }
         for obs_json in filtered_df["key_observations"].dropna():
             try:

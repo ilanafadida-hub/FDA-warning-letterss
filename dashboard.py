@@ -29,6 +29,156 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ── Global Custom Styling ─────────────────────────────────────────────────
+st.markdown("""
+<style>
+/* ── Bold section headers ── */
+.section-header {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1B3A5C;
+    border-left: 5px solid #2196F3;
+    padding: 8px 0 8px 14px;
+    margin: 1.5rem 0 1rem 0;
+    letter-spacing: 0.3px;
+}
+.section-header-red {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #8B1A1A;
+    border-left: 5px solid #E53935;
+    padding: 8px 0 8px 14px;
+    margin: 1.5rem 0 1rem 0;
+}
+.section-header-green {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1B5E20;
+    border-left: 5px solid #43A047;
+    padding: 8px 0 8px 14px;
+    margin: 1.5rem 0 1rem 0;
+}
+.section-header-purple {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #4A148C;
+    border-left: 5px solid #7E57C2;
+    padding: 8px 0 8px 14px;
+    margin: 1.5rem 0 1rem 0;
+}
+.section-header-orange {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #BF360C;
+    border-left: 5px solid #FF7043;
+    padding: 8px 0 8px 14px;
+    margin: 1.5rem 0 1rem 0;
+}
+
+/* ── Colored dividers between sections ── */
+.divider-blue { border: none; height: 3px; background: linear-gradient(90deg, #2196F3 0%, transparent 100%); margin: 1.8rem 0; }
+.divider-red { border: none; height: 3px; background: linear-gradient(90deg, #E53935 0%, transparent 100%); margin: 1.8rem 0; }
+.divider-green { border: none; height: 3px; background: linear-gradient(90deg, #43A047 0%, transparent 100%); margin: 1.8rem 0; }
+.divider-purple { border: none; height: 3px; background: linear-gradient(90deg, #7E57C2 0%, transparent 100%); margin: 1.8rem 0; }
+.divider-orange { border: none; height: 3px; background: linear-gradient(90deg, #FF7043 0%, transparent 100%); margin: 1.8rem 0; }
+.divider-rainbow {
+    border: none; height: 4px; margin: 2rem 0;
+    background: linear-gradient(90deg, #2196F3, #7E57C2, #E53935, #FF7043, #43A047);
+    border-radius: 2px;
+}
+
+/* ── Metric cards ── */
+div[data-testid="stMetric"] {
+    background: linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%);
+    border: 1px solid #c5cae9;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+div[data-testid="stMetric"] label {
+    font-weight: 700 !important;
+    color: #1B3A5C !important;
+}
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    font-weight: 800 !important;
+    color: #0D47A1 !important;
+}
+
+/* ── Tab styling ── */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 8px;
+    border-bottom: 3px solid #e3e8f0;
+}
+.stTabs [data-baseweb="tab"] {
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 10px 20px;
+    border-radius: 8px 8px 0 0;
+    color: #37474F;
+}
+.stTabs [aria-selected="true"] {
+    background: linear-gradient(135deg, #1976D2, #1565C0) !important;
+    color: white !important;
+    font-weight: 800;
+    border-bottom: 3px solid #0D47A1;
+}
+
+/* ── Expander styling ── */
+.streamlit-expanderHeader {
+    font-weight: 700 !important;
+    color: #1B3A5C !important;
+    font-size: 1rem !important;
+    background-color: #f0f4ff !important;
+    border-radius: 6px !important;
+}
+
+/* ── Title bar ── */
+h1 {
+    color: #0D47A1 !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.5px;
+}
+
+/* ── Sidebar title ── */
+.css-1d391kg h1, [data-testid="stSidebar"] h1 {
+    color: #1565C0 !important;
+}
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #f5f7ff 0%, #e8ecf4 100%);
+}
+
+/* ── Info card style ── */
+.info-card {
+    background: #f8f9ff;
+    border: 1px solid #c5cae9;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 10px 0;
+}
+.info-card-green {
+    background: #f1f8e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 10px 0;
+}
+.info-card-orange {
+    background: #fff3e0;
+    border: 1px solid #ffcc80;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 10px 0;
+}
+.info-card-red {
+    background: #fce4ec;
+    border: 1px solid #ef9a9a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 10px 0;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ── User API Key Input ────────────────────────────────────────────────────
 with st.sidebar:
     user_api_key = st.text_input(
@@ -278,7 +428,7 @@ def refresh_data():
 
 def render_letters_table(filtered_df):
     """Render the searchable letters table."""
-    st.subheader(f"📋 Warning Letters ({len(filtered_df)} results)")
+    st.markdown(f'<div class="section-header">📋 Warning Letters ({len(filtered_df)} results)</div>', unsafe_allow_html=True)
 
     if len(filtered_df) == 0:
         st.info("No letters match your filters. Try broadening your search.")
@@ -364,8 +514,8 @@ def render_letters_table(filtered_df):
     )
 
     # Expandable letter details
-    st.markdown("---")
-    st.subheader("📄 Letter Details")
+    st.markdown('<hr class="divider-blue">', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">📄 Letter Details</div>', unsafe_allow_html=True)
 
     for i, (_, row) in enumerate(filtered_df.head(50).iterrows()):
         company = row.get("company", "Unknown")
@@ -423,101 +573,73 @@ def render_letters_table(filtered_df):
 
 def render_trends(filtered_df):
     """Render trends and visualization charts."""
-    st.subheader("📈 Trends & Visualizations")
+    st.markdown('<div class="section-header-purple">📈 Trends & Visualizations</div>', unsafe_allow_html=True)
 
     if len(filtered_df) == 0:
         st.info("No data to visualize. Try broadening your filters.")
         return
 
-    # ── Top Observation Phrases (bigram analysis) ──
+    # ── Top Finding Categories (curated QA topic analysis) ──
     if "key_observations" in filtered_df.columns:
-        st.markdown("#### Most Common Finding Phrases")
-        import re as _re
-        # Stop words: anything that isn't part of an actual finding phrase
-        _stop = {
-            # English
-            "the", "a", "an", "and", "or", "to", "of", "in", "for", "on", "is",
-            "was", "were", "are", "be", "been", "being", "have", "has", "had",
-            "do", "does", "did", "not", "no", "your", "you", "that", "this",
-            "with", "from", "by", "at", "it", "its", "as", "but", "if", "we",
-            "our", "their", "they", "there", "which", "what", "when", "where",
-            "how", "all", "each", "than", "also", "any", "can", "will", "shall",
-            "should", "could", "would", "may", "might", "must", "about", "into",
-            "over", "after", "before", "between", "under", "above", "below",
-            "such", "other", "more", "less", "some", "most", "very", "just",
-            "only", "then", "them", "these", "those", "same", "both", "even",
-            "still", "make", "made", "take", "taken", "give", "given", "keep",
-            "need", "show", "part", "like", "used", "using", "use", "based",
-            "because", "further", "whether", "well", "back", "either", "neither",
-            # FDA / legal / regulatory boilerplate
-            "address", "adequately", "adequate", "required", "including", "include",
-            "without", "limitation", "specifically", "established", "establish",
-            "however", "therefore", "furthermore", "additionally", "regarding",
-            "following", "according", "ensure", "ensuring", "provide", "provided",
-            "determine", "determined", "identify", "identified", "noted", "observed",
-            "failed", "failure", "comply", "complied", "compliance", "described",
-            "found", "finding", "findings", "listed", "specific", "related",
-            "concerning", "action", "actions", "result", "results", "section",
-            "matter", "legal", "injunction", "seizure", "violations", "violation",
-            "regulatory", "federal", "agency", "act", "follow", "meet", "maintain",
-            "maintained", "report", "reported", "corrective", "prevent", "issue",
-            "issues", "issued", "prohibited", "notice", "firm", "firms", "company",
-            "performed", "performing", "perform", "implemented", "implement",
-            "conduct", "conducted", "reviewed", "review", "written", "document",
-            "documented", "procedure", "procedures", "requirement", "requirements",
-            "inspection", "inspector", "investigators", "investigator",
-            "warning", "letter", "response", "fdc", "cfr", "cgmp", "gmp",
-            "regulation", "regulations", "subpart", "meaning", "within", "upon",
-            "through", "among", "since", "until", "unless", "although", "during",
-            "cause", "caused", "fda", "withhold", "approval", "approved", "authorize",
-            "accordance", "pursuant", "applicable", "subject",
-            "current", "previous", "prior", "initial", "final", "general",
-            "overall", "total", "potential", "possible", "actual", "original",
-            "additional", "multiple", "various", "several", "many", "certain",
-            "proper", "improper", "correct", "incorrect", "complete", "incomplete",
-            "effective", "ineffective", "sufficient", "insufficient",
-            "significant", "critical", "major", "minor", "routine",
-            "promptly", "immediately", "appropriate", "necessary", "designed",
-            "assure", "assured",
-            # Generic GMP / manufacturing (too vague alone)
-            "drug", "drugs", "product", "products", "food", "foods", "device",
-            "devices", "dietary", "supplement", "manufacture", "manufactured",
-            "manufacturing", "production", "process", "processing", "batch", "lot",
-            "identity", "strength", "quality", "purity", "control", "controls",
-            "specifications", "components", "component", "materials", "material",
-            "equipment", "facility", "facilities", "test", "testing", "tested",
-            "record", "records", "data", "sample", "samples", "system", "systems",
-            "program", "standard", "method", "methods", "level", "area", "areas",
-            "label", "labels", "labeling", "container", "storage", "personnel",
-            "plan", "plans", "protocol", "unit", "units", "lot", "lots",
-            # Legal boilerplate fragments
-            "usc", "articles", "admission", "issuance", "export", "certificates",
-            "represented", "purport", "possess", "develop", "developed",
-        }
-        all_bigrams = []
+        st.markdown('<div class="section-header-purple" style="font-size:1.15rem;">🔎 Top Finding Categories</div>', unsafe_allow_html=True)
+        _FINDING_TOPICS = [
+            ("Contamination", ["contamination", "contaminated", "cross-contamination", "cross contamination"]),
+            ("Cleaning / Sanitation", ["cleaning", "sanitization", "sanitation", "sanitizing", "insanitary", "unsanitary"]),
+            ("Sterility / Aseptic Processing", ["sterility", "sterile", "aseptic", "sterilization", "sterilized"]),
+            ("Microbiological Controls", ["microbial", "microbiological", "microorganism", "bioburden", "endotoxin", "bacterial"]),
+            ("HACCP / Hazard Analysis", ["haccp", "hazard analysis", "critical control point", "preventive controls"]),
+            ("Stability / Expiration", ["stability", "expiration", "shelf life", "degradation"]),
+            ("Laboratory Controls", ["laboratory", "lab controls", "out-of-specification", "oos", "out of specification"]),
+            ("Process Validation", ["process validation", "cleaning validation", "method validation", "validated"]),
+            ("Analysis Intervals", ["intervals", "frequency of analysis", "periodic testing", "annual review"]),
+            ("Supplier / Vendor Controls", ["supplier", "suppliers", "vendor", "vendor qualification", "incoming"]),
+            ("CAPA / Root Cause", ["capa", "corrective action", "preventive action", "root cause"]),
+            ("Complaint Handling", ["complaint", "complaints", "adverse event", "adverse reaction"]),
+            ("Water Systems", ["water system", "purified water", "water for injection", "wfi"]),
+            ("Equipment / Calibration", ["maintenance", "calibration", "equipment qualification"]),
+            ("Labeling / Misbranding", ["mislabel", "misbranded", "misbranding", "labeling violation", "false label"]),
+            ("Adulteration", ["adulterated", "adulteration", "unapproved"]),
+            ("Pest Control", ["pest", "rodent", "insect", "vermin", "infestation"]),
+            ("Temperature Control", ["temperature", "cold chain", "refrigeration", "temperature control"]),
+            ("Change Control", ["change control", "change management", "uncontrolled change"]),
+            ("Training Gaps", ["training", "untrained", "inadequate training"]),
+            ("Raw Materials / Ingredients", ["raw material", "active ingredient", "ingredient identity", "excipient"]),
+            ("Recall / Batch Failure", ["recall", "batch failure", "market withdrawal", "rejected"]),
+            ("Foreign Material", ["foreign material", "foreign matter", "particulate", "particle"]),
+            ("Packaging / Closure Integrity", ["packaging", "closure", "container closure", "seal integrity"]),
+            ("Environmental Monitoring", ["environmental monitoring", "cleanroom", "clean room", "air quality"]),
+            ("Data Integrity", ["data integrity", "audit trail", "falsified", "manipulated", "backdating"]),
+            ("Deviation Management", ["deviation", "non-conformance", "nonconformance", "out-of-trend"]),
+            ("Risk Assessment", ["risk assessment", "risk analysis", "risk management"]),
+            ("Allergen Control", ["allergen", "allergens", "undeclared"]),
+            ("Drug Impurities / Potency", ["impurity", "impurities", "dissolution", "potency", "content uniformity"]),
+        ]
+        topic_counts = Counter()
         for obs_json in filtered_df["key_observations"].dropna():
             try:
                 for obs in json.loads(obs_json):
-                    words = [_re.sub(r"[^a-z]", "", w) for w in obs.lower().split()]
-                    words = [w for w in words if len(w) > 2 and w not in _stop]
-                    for i in range(len(words) - 1):
-                        all_bigrams.append(f"{words[i]} {words[i+1]}")
+                    text = obs.lower()
+                    for display_label, patterns in _FINDING_TOPICS:
+                        if any(pat in text for pat in patterns):
+                            topic_counts[display_label] += 1
+                            break
             except (json.JSONDecodeError, TypeError):
                 pass
 
-        if all_bigrams:
-            bigram_counts = Counter(all_bigrams).most_common(20)
-            bigram_df = pd.DataFrame(bigram_counts, columns=["phrase", "count"])
-            chart = alt.Chart(bigram_df).mark_bar(color="#9467bd").encode(
-                x=alt.X("count:Q", title="Frequency"),
-                y=alt.Y("phrase:N", title="", sort="-x"),
-                tooltip=["phrase:N", "count:Q"],
+        if topic_counts:
+            topic_data = topic_counts.most_common(20)
+            topic_df = pd.DataFrame(topic_data, columns=["category", "count"])
+            chart = alt.Chart(topic_df).mark_bar(color="#9467bd").encode(
+                x=alt.X("count:Q", title="Number of Observations"),
+                y=alt.Y("category:N", title="", sort="-x"),
+                tooltip=["category:N", "count:Q"],
             ).properties(height=500)
             st.altair_chart(chart, use_container_width=True)
 
     # ── Top Violations ──
     if "violations" in filtered_df.columns:
-        st.markdown("#### Top CFR Violations Cited")
+        st.markdown('<hr class="divider-red">', unsafe_allow_html=True)
+        st.markdown('<div class="section-header-red" style="font-size:1.15rem;">⚠️ Top CFR Violations Cited</div>', unsafe_allow_html=True)
         all_violations = []
         for v in filtered_df["violations"].dropna():
             try:
@@ -537,12 +659,13 @@ def render_trends(filtered_df):
             st.altair_chart(chart, use_container_width=True)
 
             # Clickable links for top violations
-            st.markdown("**Click to view regulation:**")
+            st.markdown("**🔗 Click to view regulation:**")
             st.markdown(cfr_list_to_markdown([v for v, _ in viol_counts[:10]]), unsafe_allow_html=False)
 
     # ── Common Responses by Subject ──
     if "subject" in filtered_df.columns:
-        st.markdown("#### Common Responses by Subject")
+        st.markdown('<hr class="divider-green">', unsafe_allow_html=True)
+        st.markdown('<div class="section-header-green" style="font-size:1.15rem;">🏷️ Common Responses by Subject</div>', unsafe_allow_html=True)
         subject_counts = filtered_df["subject"].dropna().value_counts().head(15).reset_index()
         subject_counts.columns = ["subject", "count"]
         if len(subject_counts) > 0:
@@ -578,14 +701,14 @@ def render_trends(filtered_df):
 
 def render_insights(df, filtered_df):
     """Render insights, metrics, and Q&A interface."""
-    st.subheader("💡 Insights & Q&A")
+    st.markdown('<div class="section-header-orange">💡 Insights & Q&A</div>', unsafe_allow_html=True)
 
     if len(df) == 0:
         st.info("No data available. Fetch data first using the Refresh button.")
         return
 
     # ── Q&A Chat Interface (placed first for easy access) ──
-    st.markdown("#### 💬 Ask a Question About the Data")
+    st.markdown('<div class="section-header" style="font-size:1.15rem;">💬 Ask a Question About the Data</div>', unsafe_allow_html=True)
     st.caption("Ask questions like: 'Which companies received multiple warning letters?', "
                "'What are the most common violations in 2024?', 'Show trends in cleaning observations'")
     if not (user_api_key or OPENAI_API_KEY):
@@ -598,10 +721,10 @@ def render_insights(df, filtered_df):
         st.markdown("**Answer:**")
         st.write(answer)
 
-    st.markdown("---")
+    st.markdown('<hr class="divider-orange">', unsafe_allow_html=True)
 
     # ── Key Metrics Cards ──
-    st.markdown("#### Key Metrics")
+    st.markdown('<div class="section-header-orange" style="font-size:1.15rem;">📊 Key Metrics</div>', unsafe_allow_html=True)
     m1, m2, m3, m4 = st.columns(4)
 
     with m1:
@@ -625,19 +748,19 @@ def render_insights(df, filtered_df):
         else:
             st.metric("Repeat Offenders", "N/A")
 
-    st.markdown("---")
+    st.markdown('<hr class="divider-green">', unsafe_allow_html=True)
 
     # ── Auto-Generated Insights ──
-    st.markdown("#### Auto-Generated Insights")
+    st.markdown('<div class="section-header-green" style="font-size:1.15rem;">🧠 Auto-Generated Insights</div>', unsafe_allow_html=True)
 
     insights = generate_insights(df)
     for insight in insights:
-        st.markdown(f"- {insight}")
+        st.markdown(f'<div class="info-card">💡 <strong>{insight}</strong></div>', unsafe_allow_html=True)
 
-    st.markdown("---")
+    st.markdown('<hr class="divider-blue">', unsafe_allow_html=True)
 
     # ── Year-over-Year Comparison ──
-    st.markdown("#### Compare Two Years")
+    st.markdown('<div class="section-header" style="font-size:1.15rem;">📅 Compare Two Years</div>', unsafe_allow_html=True)
     if "year" in df.columns:
         available_years = sorted(df["year"].dropna().unique().astype(int).tolist(), reverse=True)
         if len(available_years) >= 2:
@@ -664,12 +787,12 @@ def render_insights(df, filtered_df):
                         top2 = df_y2["issuing_office"].mode().iloc[0] if len(df_y2) > 0 else "N/A"
                         st.metric(f"Top Office ({year2})", top2[:30])
 
-    st.markdown("---")
+    st.markdown('<hr class="divider-purple">', unsafe_allow_html=True)
 
     # ── Observations & Responses Review ──
     render_observations_and_responses(filtered_df)
 
-    st.markdown("---")
+    st.markdown('<hr class="divider-rainbow">', unsafe_allow_html=True)
 
     # ── Acceptable Responses Reference ──
     render_acceptable_responses()
@@ -678,7 +801,7 @@ def render_insights(df, filtered_df):
 
 def render_observations_and_responses(df):
     """Show paired observations and corrective actions from letters."""
-    st.markdown("#### Observations & Responses Review")
+    st.markdown('<div class="section-header-red" style="font-size:1.15rem;">🔬 Observations & Responses Review</div>', unsafe_allow_html=True)
     st.caption("See what FDA observed and what corrective actions were required")
 
     if len(df) == 0 or "key_observations" not in df.columns:
@@ -764,7 +887,7 @@ def render_acceptable_responses():
     Show a reference guide of acceptable responses to common FDA observations.
     This is a QA reference based on FDA guidance documents.
     """
-    st.markdown("#### Acceptable Response Reference Guide")
+    st.markdown('<div class="section-header-green" style="font-size:1.15rem;">✅ Acceptable Response Reference Guide</div>', unsafe_allow_html=True)
     st.caption("Common FDA observations and recommended response strategies for QA teams")
 
     acceptable_responses = {
@@ -1127,7 +1250,7 @@ def _answer_with_openai(question, df, api_key=None):
 
 def render_letter_detail(df):
     """Render detailed view for a single letter."""
-    st.subheader("📄 Letter Detail View")
+    st.markdown('<div class="section-header">📄 Letter Detail View</div>', unsafe_allow_html=True)
 
     if len(df) == 0:
         st.info("No letters available.")
@@ -1146,7 +1269,7 @@ def render_letter_detail(df):
         row = df.iloc[idx]
 
         # Metadata
-        st.markdown("### Metadata")
+        st.markdown('<div class="section-header" style="font-size:1.15rem;">📋 Metadata</div>', unsafe_allow_html=True)
         meta_col1, meta_col2 = st.columns(2)
         with meta_col1:
             st.markdown(f"**Company:** {row.get('company', 'N/A')}")
@@ -1164,7 +1287,8 @@ def render_letter_detail(df):
 
         # Summary
         if pd.notna(row.get("summary")):
-            st.markdown("### Summary")
+            st.markdown('<hr class="divider-blue">', unsafe_allow_html=True)
+            st.markdown('<div class="section-header-green" style="font-size:1.15rem;">📝 Summary</div>', unsafe_allow_html=True)
             st.write(row["summary"])
 
         # Observations
@@ -1172,7 +1296,8 @@ def render_letter_detail(df):
             try:
                 obs = json.loads(row["key_observations"])
                 if obs:
-                    st.markdown("### Key Observations")
+                    st.markdown('<hr class="divider-orange">', unsafe_allow_html=True)
+                    st.markdown('<div class="section-header-orange" style="font-size:1.15rem;">🔍 Key Observations</div>', unsafe_allow_html=True)
                     for i, o in enumerate(obs, 1):
                         st.markdown(f"{i}. {o}")
             except (json.JSONDecodeError, TypeError):
@@ -1183,7 +1308,8 @@ def render_letter_detail(df):
             try:
                 viols = json.loads(row["violations"])
                 if viols:
-                    st.markdown("### CFR Violations")
+                    st.markdown('<hr class="divider-red">', unsafe_allow_html=True)
+                    st.markdown('<div class="section-header-red" style="font-size:1.15rem;">⚠️ CFR Violations</div>', unsafe_allow_html=True)
                     st.markdown(cfr_list_to_markdown(viols), unsafe_allow_html=False)
             except (json.JSONDecodeError, TypeError):
                 pass
@@ -1193,7 +1319,8 @@ def render_letter_detail(df):
             try:
                 actions = json.loads(row["corrective_actions"])
                 if actions:
-                    st.markdown("### Corrective Actions Required")
+                    st.markdown('<hr class="divider-green">', unsafe_allow_html=True)
+                    st.markdown('<div class="section-header-green" style="font-size:1.15rem;">✅ Corrective Actions Required</div>', unsafe_allow_html=True)
                     for a in actions:
                         st.markdown(f"- {a}")
             except (json.JSONDecodeError, TypeError):
@@ -1201,7 +1328,8 @@ def render_letter_detail(df):
 
         # Full text
         if pd.notna(row.get("full_text")) and len(str(row["full_text"])) > 50:
-            st.markdown("### Full Letter Text")
+            st.markdown('<hr class="divider-purple">', unsafe_allow_html=True)
+            st.markdown('<div class="section-header-purple" style="font-size:1.15rem;">📜 Full Letter Text</div>', unsafe_allow_html=True)
             st.text_area("", value=str(row["full_text"]), height=400, disabled=True)
 
 

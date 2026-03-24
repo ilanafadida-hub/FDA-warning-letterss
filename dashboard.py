@@ -627,14 +627,45 @@ def render_trends(filtered_df):
                 pass
 
         if topic_counts:
-            topic_data = topic_counts.most_common(20)
-            topic_df = pd.DataFrame(topic_data, columns=["category", "count"])
-            chart = alt.Chart(topic_df).mark_bar(color="#9467bd").encode(
-                x=alt.X("count:Q", title="Number of Observations"),
-                y=alt.Y("category:N", title="", sort="-x"),
-                tooltip=["category:N", "count:Q"],
-            ).properties(height=500)
-            st.altair_chart(chart, use_container_width=True)
+            topic_data = topic_counts.most_common(30)
+            max_count = topic_data[0][1] if topic_data else 1
+
+            # Color palette for rows (cycles through)
+            _row_colors = [
+                ("#7E57C2", "#f3e5f5"),  # purple
+                ("#2196F3", "#e3f2fd"),  # blue
+                ("#43A047", "#e8f5e9"),  # green
+                ("#FF7043", "#fff3e0"),  # orange
+                ("#E53935", "#fce4ec"),  # red
+                ("#00897B", "#e0f2f1"),  # teal
+            ]
+
+            table_html = """<style>
+            .findings-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; font-size: 15px; }
+            .findings-table td { padding: 10px 16px; }
+            .findings-row { border-radius: 8px; transition: transform 0.15s; }
+            .findings-row:hover { transform: scale(1.01); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+            .findings-category { font-weight: 700; color: #1B3A5C; width: 45%; }
+            .findings-bar-cell { width: 40%; }
+            .findings-bar-bg { background: #e0e0e0; border-radius: 6px; height: 22px; overflow: hidden; }
+            .findings-bar { height: 100%; border-radius: 6px; transition: width 0.5s; }
+            .findings-count { font-weight: 800; font-size: 1.1rem; text-align: right; width: 15%; white-space: nowrap; }
+            </style>"""
+            table_html += '<table class="findings-table">'
+            for i, (category, count) in enumerate(topic_data):
+                bar_color, bg_color = _row_colors[i % len(_row_colors)]
+                pct = (count / max_count) * 100
+                table_html += f"""<tr class="findings-row" style="background:{bg_color};">
+                    <td class="findings-category">{category}</td>
+                    <td class="findings-bar-cell">
+                        <div class="findings-bar-bg">
+                            <div class="findings-bar" style="width:{pct:.0f}%; background:{bar_color};"></div>
+                        </div>
+                    </td>
+                    <td class="findings-count" style="color:{bar_color};">{count}</td>
+                </tr>"""
+            table_html += "</table>"
+            st.markdown(table_html, unsafe_allow_html=True)
 
     # ── Top Violations ──
     if "violations" in filtered_df.columns:

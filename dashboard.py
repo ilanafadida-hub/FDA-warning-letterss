@@ -429,122 +429,89 @@ def render_trends(filtered_df):
         st.info("No data to visualize. Try broadening your filters.")
         return
 
-    # ── Top Observation Keywords (finding-relevant only) ──
+    # ── Top Observation Phrases (bigram analysis) ──
     if "key_observations" in filtered_df.columns:
-        st.markdown("#### Most Common Observation Keywords")
-        all_words = []
+        st.markdown("#### Most Common Finding Phrases")
         import re as _re
-        # Comprehensive stop words: only allow specific FDA finding/problem words through
-        stop_words = {
-            # ── Common English ──
+        # Stop words: anything that isn't part of an actual finding phrase
+        _stop = {
+            # English
             "the", "a", "an", "and", "or", "to", "of", "in", "for", "on", "is",
             "was", "were", "are", "be", "been", "being", "have", "has", "had",
             "do", "does", "did", "not", "no", "your", "you", "that", "this",
             "with", "from", "by", "at", "it", "its", "as", "but", "if", "we",
             "our", "their", "they", "there", "which", "what", "when", "where",
-            "how", "all", "each", "than", "also", "any", "firm", "did", "can",
-            "will", "shall", "should", "could", "would", "may", "might", "must",
-            "about", "into", "over", "after", "before", "between", "under",
-            "above", "below", "such", "other", "more", "less", "some", "most",
-            "very", "just", "only", "then", "them", "these", "those", "been",
-            "same", "both", "either", "neither", "well", "back", "even", "still",
-            "make", "made", "take", "taken", "give", "given", "keep", "kept",
-            "need", "show", "shown", "part", "case", "cases", "like", "used",
-            "using", "use", "uses", "based", "because", "further", "whether",
-            # ── Generic manufacturing/GMP terms (appear in every letter) ──
-            "quality", "control", "controls", "batch", "batches", "process",
-            "processes", "processing", "production", "manufacture", "manufactured",
-            "manufacturing", "equipment", "specifications", "specification",
-            "components", "component", "testing", "test", "tested", "tests",
-            "identity", "strength", "purity", "records", "record", "recording",
-            # ── FDA boilerplate / regulatory framework ──
-            "without", "required", "including", "include", "includes", "included",
-            "established", "establish", "establishing", "however", "therefore",
-            "furthermore", "additionally", "specifically", "noted", "observed",
-            "example", "examples", "regarding", "following", "according",
-            "ensure", "ensuring", "ensured", "within", "during",
-            "upon", "through", "among", "since", "until", "unless", "although",
-            "provide", "provided", "provides", "providing",
-            "determine", "determined", "determines", "determining",
-            "identify", "identified", "identifies", "identifying",
-            "adequate", "adequately", "appropriate", "appropriately",
-            "necessary", "requirement", "requirements",
-            "procedure", "procedures", "written", "document", "documents",
-            "documented", "documentation", "letter", "warning", "response",
-            "company", "companies", "firms", "inspection", "inspector",
-            "investigators", "investigator", "conducted", "conduct",
-            "failed", "failure", "failures", "comply", "complied", "compliance",
-            "described", "describe", "describes", "description",
-            "noted", "note", "notes", "review", "reviewed", "reviewing",
-            "found", "find", "finding", "findings", "listed", "list",
-            "specific", "specifically", "related", "concerning",
-            "information", "conditions", "condition", "designed", "design",
-            "assure", "assured", "assuring", "notice", "notices",
-            "system", "systems", "program", "programs", "protocol", "protocols",
-            "standard", "standards", "parameter", "parameters", "criteria",
-            "limits", "limit", "acceptable", "acceptance", "release", "released",
-            "approved", "approval", "authorize", "authorized",
-            # ── Legal / enforcement boilerplate ──
-            "address", "action", "result", "results", "section", "matter",
-            "legal", "injunction", "seizure", "limitation", "violations",
-            "violation", "regulatory", "federal", "agency", "act",
-            "follow", "meet", "maintain", "maintained", "report", "reported",
-            "corrective", "prevent", "issue", "issues", "issued",
-            "prohibited", "prohibition",
-            # ── Generic action verbs ──
-            "perform", "performed", "performing", "implement", "implemented",
-            "implementing", "monitor", "monitored", "monitoring",
-            "validate", "validated", "validating", "validation",
-            "calibrate", "calibrated", "calibration",
-            "evaluate", "evaluated", "evaluating", "evaluation",
-            "verify", "verified", "verifying", "verification",
-            "train", "trained", "training", "qualified", "qualify",
-            # ── Generic facility / operations terms ──
-            "facility", "facilities", "area", "areas", "room", "rooms",
-            "material", "materials", "sample", "samples", "sampling",
-            "unit", "units", "lot", "lots", "number", "numbers",
-            "data", "date", "dates", "time", "times", "period", "periods",
-            "method", "methods", "step", "steps", "level", "levels",
-            "type", "types", "form", "forms", "label", "labels", "labeling",
-            "container", "containers", "storage", "store", "stored",
-            "personnel", "employee", "employees", "operator", "operators",
-            "management", "supervisor",
-            # ── Generic descriptors ──
+            "how", "all", "each", "than", "also", "any", "can", "will", "shall",
+            "should", "could", "would", "may", "might", "must", "about", "into",
+            "over", "after", "before", "between", "under", "above", "below",
+            "such", "other", "more", "less", "some", "most", "very", "just",
+            "only", "then", "them", "these", "those", "same", "both", "even",
+            "still", "make", "made", "take", "taken", "give", "given", "keep",
+            "need", "show", "part", "like", "used", "using", "use", "based",
+            "because", "further", "whether", "well", "back", "either", "neither",
+            # FDA / legal / regulatory boilerplate
+            "address", "adequately", "adequate", "required", "including", "include",
+            "without", "limitation", "specifically", "established", "establish",
+            "however", "therefore", "furthermore", "additionally", "regarding",
+            "following", "according", "ensure", "ensuring", "provide", "provided",
+            "determine", "determined", "identify", "identified", "noted", "observed",
+            "failed", "failure", "comply", "complied", "compliance", "described",
+            "found", "finding", "findings", "listed", "specific", "related",
+            "concerning", "action", "actions", "result", "results", "section",
+            "matter", "legal", "injunction", "seizure", "violations", "violation",
+            "regulatory", "federal", "agency", "act", "follow", "meet", "maintain",
+            "maintained", "report", "reported", "corrective", "prevent", "issue",
+            "issues", "issued", "prohibited", "notice", "firm", "firms", "company",
+            "performed", "performing", "perform", "implemented", "implement",
+            "conduct", "conducted", "reviewed", "review", "written", "document",
+            "documented", "procedure", "procedures", "requirement", "requirements",
+            "inspection", "inspector", "investigators", "investigator",
+            "warning", "letter", "response", "fdc", "cfr", "cgmp", "gmp",
+            "regulation", "regulations", "subpart", "meaning", "within", "upon",
+            "through", "among", "since", "until", "unless", "although", "during",
+            "cause", "caused", "fda", "withhold", "approval", "approved", "authorize",
+            "accordance", "pursuant", "applicable", "subject",
             "current", "previous", "prior", "initial", "final", "general",
             "overall", "total", "potential", "possible", "actual", "original",
             "additional", "multiple", "various", "several", "many", "certain",
             "proper", "improper", "correct", "incorrect", "complete", "incomplete",
             "effective", "ineffective", "sufficient", "insufficient",
             "significant", "critical", "major", "minor", "routine",
-            "physical", "chemical", "visual",
-            # ── Generic finding language ──
-            "observe", "observation", "observations", "lack", "lacking", "lacks",
-            "inadequate", "inadequacy", "absence", "absent",
-            "deviation", "deviations", "discrepancy", "discrepancies",
-            "error", "errors", "deficiency", "deficiencies",
-            "problem", "problems", "concern", "concerns",
-            # ── FDA-specific generic terms ──
-            "fdc", "cfr", "cgmp", "product", "products", "drug", "drugs",
-            "food", "foods", "device", "devices", "dietary", "supplement",
-            "gmp", "regulations", "regulation", "subpart",
+            "promptly", "immediately", "appropriate", "necessary", "designed",
+            "assure", "assured",
+            # Generic GMP / manufacturing (too vague alone)
+            "drug", "drugs", "product", "products", "food", "foods", "device",
+            "devices", "dietary", "supplement", "manufacture", "manufactured",
+            "manufacturing", "production", "process", "processing", "batch", "lot",
+            "identity", "strength", "quality", "purity", "control", "controls",
+            "specifications", "components", "component", "materials", "material",
+            "equipment", "facility", "facilities", "test", "testing", "tested",
+            "record", "records", "data", "sample", "samples", "system", "systems",
+            "program", "standard", "method", "methods", "level", "area", "areas",
+            "label", "labels", "labeling", "container", "storage", "personnel",
+            "plan", "plans", "protocol", "unit", "units", "lot", "lots",
+            # Legal boilerplate fragments
+            "usc", "articles", "admission", "issuance", "export", "certificates",
+            "represented", "purport", "possess", "develop", "developed",
         }
+        all_bigrams = []
         for obs_json in filtered_df["key_observations"].dropna():
             try:
-                obs_list = json.loads(obs_json)
-                for obs in obs_list:
-                    # Strip punctuation from each word before filtering
-                    words = [_re.sub(r'[^a-z]', '', w) for w in obs.lower().split()]
-                    all_words.extend(w for w in words if len(w) > 3 and w not in stop_words)
+                for obs in json.loads(obs_json):
+                    words = [_re.sub(r"[^a-z]", "", w) for w in obs.lower().split()]
+                    words = [w for w in words if len(w) > 2 and w not in _stop]
+                    for i in range(len(words) - 1):
+                        all_bigrams.append(f"{words[i]} {words[i+1]}")
             except (json.JSONDecodeError, TypeError):
                 pass
 
-        if all_words:
-            word_counts = Counter(all_words).most_common(20)
-            word_df = pd.DataFrame(word_counts, columns=["keyword", "count"])
-            chart = alt.Chart(word_df).mark_bar(color="#9467bd").encode(
+        if all_bigrams:
+            bigram_counts = Counter(all_bigrams).most_common(20)
+            bigram_df = pd.DataFrame(bigram_counts, columns=["phrase", "count"])
+            chart = alt.Chart(bigram_df).mark_bar(color="#9467bd").encode(
                 x=alt.X("count:Q", title="Frequency"),
-                y=alt.Y("keyword:N", title="", sort="-x"),
-                tooltip=["keyword:N", "count:Q"],
+                y=alt.Y("phrase:N", title="", sort="-x"),
+                tooltip=["phrase:N", "count:Q"],
             ).properties(height=500)
             st.altair_chart(chart, use_container_width=True)
 

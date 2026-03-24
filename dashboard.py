@@ -433,7 +433,8 @@ def render_trends(filtered_df):
     if "key_observations" in filtered_df.columns:
         st.markdown("#### Most Common Observation Keywords")
         all_words = []
-        # Expanded stop words: standard English + FDA boilerplate / non-finding words
+        import re as _re
+        # Expanded stop words: standard English + FDA boilerplate / legal / non-finding words
         stop_words = {
             # common English
             "the", "a", "an", "and", "or", "to", "of", "in", "for", "on", "is",
@@ -447,34 +448,46 @@ def render_trends(filtered_df):
             "above", "below", "such", "other", "more", "less", "some", "most",
             "very", "just", "only", "then", "them", "these", "those", "been",
             "same", "both", "either", "neither", "well", "back", "even", "still",
+            "make", "made", "take", "taken", "give", "given", "keep", "kept",
+            "need", "show", "shown", "part", "case", "cases", "like", "used",
+            "using", "use", "uses", "based", "because", "further", "whether",
             # FDA boilerplate / non-finding functional words
             "without", "required", "including", "include", "includes", "included",
             "established", "establish", "establishing", "however", "therefore",
             "furthermore", "additionally", "specifically", "noted", "observed",
             "example", "examples", "regarding", "following", "according",
-            "ensure", "ensuring", "ensured", "whether", "within", "during",
+            "ensure", "ensuring", "ensured", "within", "during",
             "upon", "through", "among", "since", "until", "unless", "although",
             "provide", "provided", "provides", "providing",
             "determine", "determined", "determines", "determining",
             "identify", "identified", "identifies", "identifying",
             "adequate", "adequately", "appropriate", "appropriately",
-            "necessary", "requirement", "requirements", "required",
+            "necessary", "requirement", "requirements",
             "procedure", "procedures", "written", "document", "documents",
             "documented", "documentation", "letter", "warning", "response",
             "company", "companies", "firm's", "inspection", "inspector",
             "investigators", "investigator", "conducted", "conduct",
-            "include", "included", "includes", "also", "failed", "failure",
-            "comply", "complied", "compliance", "complying",
+            "failed", "failure", "comply", "complied", "compliance", "complying",
             "described", "describe", "describes", "description",
             "noted", "note", "notes", "review", "reviewed", "reviewing",
             "found", "find", "finding", "findings", "listed", "list",
             "specific", "specifically", "related", "concerning",
+            # Legal / enforcement boilerplate
+            "address", "action", "result", "results", "section", "matter",
+            "legal", "injunction", "seizure", "limitation", "violations",
+            "violation", "regulatory", "federal", "agency", "act",
+            "follow", "meet", "maintain", "maintained", "report", "reported",
+            "corrective", "prevent", "issue", "issues", "issued",
+            # FDA-specific generic terms
+            "fd&c", "cfr", "cgmp", "product", "products", "drug", "drugs",
+            "food", "foods", "device", "devices", "dietary", "supplement",
         }
         for obs_json in filtered_df["key_observations"].dropna():
             try:
                 obs_list = json.loads(obs_json)
                 for obs in obs_list:
-                    words = obs.lower().split()
+                    # Strip punctuation from each word before filtering
+                    words = [_re.sub(r'[^a-z]', '', w) for w in obs.lower().split()]
                     all_words.extend(w for w in words if len(w) > 3 and w not in stop_words)
             except (json.JSONDecodeError, TypeError):
                 pass

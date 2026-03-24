@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt uvicorn fastapi
+
+# Copy all application code
+COPY . .
+
+# Create data directory
+RUN mkdir -p data
+
+# Create startup script: fetch data if needed, then run API
+RUN echo '#!/bin/sh\n\
+echo "[STARTUP] Checking for data..."\n\
+if [ ! -f data/warning_letters.csv ]; then\n\
+  echo "[STARTUP] No data found. Fetching first 100 letters..."\n\
+  python fetch_fda_data.py --limit 100 2>&1\n\
+  echo "[STARTUP] Summarizing..."\n\
+  python summarize_letters.py 2>&1\n\
+  echo "[STARTUP] Data ready!"\n\
+fi\n\
+echo "[STARTUP] Launching API on port ${PORT:-8080}..."\n\
+uvicorn api:app --host 0.0.0.0 --port ${PORT:-8080}\n\
+' > /app/start.sh && chmod +x /app/start.sh
+
+EXPOSE ${PORT:-8080}
+
+CMD ["sh", "/app/start.sh"]
